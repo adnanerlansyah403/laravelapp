@@ -26,22 +26,22 @@ use Barryvdh\Debugbar\Facades\Debugbar;
     OPTIONS - Ask the server which verbs are allowed
 */
 
-Route::get('/', function () {
-    // try {
-    //     throw new Exception('Try Message!');
-    // } catch (\Exception $e) {
-    //     Debugbar::addException($e);
-    // }
-    // Debugbar::startMeasure('Wohoo', 'Rendering of out first message');
+// Route::get('/', function () {
+//     // try {
+//     //     throw new Exception('Try Message!');
+//     // } catch (\Exception $e) {
+//     //     Debugbar::addException($e);
+//     // }
+//     // Debugbar::startMeasure('Wohoo', 'Rendering of out first message');
 
-    // $name = "Code with Adnan";
+//     // $name = "Code with Adnan";
 
-    // dd(config('services.mailgun.domain'));
+//     // dd(config('services.mailgun.domain'));
 
-    // dd(env('APP_NAME'));
+//     // dd(env('APP_NAME'));
 
-    return view('welcome');
-});
+//     return view('welcome');
+// });
 
 // Route for invoke method
 // Route::get('/', HomeController::class);
@@ -65,11 +65,11 @@ Route::prefix('/blog')->group(function () {
     Route::post('/store', [PostController::class, 'store'])->name('blog.store');
 
     // PUT OR PATCH
-    Route::get('/edit/{id}', [PostController::class, 'edit']);
-    Route::patch('/{id}', [PostController::class, 'update']);
+    Route::get('/edit/{id}', [PostController::class, 'edit'])->name('blog.edit');
+    Route::patch('/{id}', [PostController::class, 'update'])->name('blog.update');
 
     // DELETE
-    Route::post('/{id}', [PostController::class, 'destroy']);
+    Route::delete('/destroy/{id}', [PostController::class, 'destroy'])->name('blog.destroy');
 });
 
 // Multiple HTTP verbs

@@ -69,7 +69,7 @@ class PostController extends Controller
         $posts = Post::orderBy('updated_at', 'desc')->get();
 
         // dd($posts);
-        return view('layouts.app', [
+        return view('blog.index', [
             'posts' => $posts,
         ]);
     }
@@ -103,11 +103,23 @@ class PostController extends Controller
 
         // dd($request);
 
+        $request->validate([
+            'title' => 'required|unique:posts|max:255',
+            'excerpt' => 'required',
+            'body' => 'required',
+            'image_path' => [
+                'required',
+                'mimes:jpeg,png,jpg',
+                'max:5048'
+            ],
+            'min_to_read' => 'min:0|max:10'
+        ]);
+
         Post::create([
             'title' => $request->title,
             'excerpt' => $request->excerpt,
             'body' => $request->body,
-            'image_path' => 'temporary',
+            'image_path' => $this->storeImage($request),
             'is_published' => $request->is_published === 'on',
             'min_to_read' => $request->min_to_read
         ]);
@@ -136,7 +148,9 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        return view('blog.edit', [
+            'post' => Post::findOrFail($id)
+        ]);
     }
 
     /**
@@ -148,7 +162,27 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|unique:posts,title,' . $id,
+            'excerpt' => 'required',
+            'body' => 'required',
+            'image_path' => [
+                'mimes:jpeg,png,jpg',
+                'max:5048'
+            ],
+            'min_to_read' => 'min:0|max:10'
+        ]);
+        $request->except(['_token', '_method']);
+        Post::findOrFail($id)->update([
+            'title' => $request->title,
+            'excerpt' => $request->excerpt,
+            'body' => $request->body,
+            'image_path' => $request->image_path,
+            'is_published' => $request->is_published === 'on',
+            'min_to_read' => $request->min_to_read
+        ]);
+
+        return redirect()->route('blog.index');
     }
 
     /**
@@ -159,6 +193,21 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Post::findOrFail($id);
+
+        if(file_exists(public_path($post->image_path))) {
+            unlink(public_path($post->image_path));
+        }
+
+        $post->delete();
+
+        return redirect()->route('blog.index')->with('message', 'Post has been deleted successfully');
+    }
+
+    private function storeImage($request)
+    {
+        $newImageName = uniqid() . '-' . $request->title . "." . $request->image->extension();
+
+        return $request->image->move(public_path('images'), $newImageName);
     }
 }
