@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Http\Requests\PostFormRequest;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -66,7 +68,7 @@ class PostController extends Controller
         // $posts = Post::get()->count();
         // $posts = Post::min('min_to_read');
         // $posts = Post::max('min_to_read');
-        $posts = Post::orderBy('updated_at', 'desc')->get();
+        $posts = Post::orderBy('updated_at', 'desc')->paginate(20);
 
         // dd($posts);
         return view('blog.index', [
@@ -90,7 +92,7 @@ class PostController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(PostFormRequest $request)
     {
         // $post = new Post();
         // $post->title = $request->title;
@@ -103,17 +105,7 @@ class PostController extends Controller
 
         // dd($request);
 
-        $request->validate([
-            'title' => 'required|unique:posts|max:255',
-            'excerpt' => 'required',
-            'body' => 'required',
-            'image_path' => [
-                'required',
-                'mimes:jpeg,png,jpg',
-                'max:5048'
-            ],
-            'min_to_read' => 'min:0|max:10'
-        ]);
+        $request->validated();
 
         Post::create([
             'title' => $request->title,
@@ -160,18 +152,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(PostFormRequest $request, $id)
     {
-        $request->validate([
-            'title' => 'required|unique:posts,title,' . $id,
-            'excerpt' => 'required',
-            'body' => 'required',
-            'image_path' => [
-                'mimes:jpeg,png,jpg',
-                'max:5048'
-            ],
-            'min_to_read' => 'min:0|max:10'
-        ]);
+        $request->validated();
         $request->except(['_token', '_method']);
         Post::findOrFail($id)->update([
             'title' => $request->title,
